@@ -28,11 +28,17 @@ module Y_ROM(I,
 	YEdge4T, YEdge4B
 	);
 	
-	parameter E0 = 210;
-	parameter E1 = 252;
-	parameter E2 = 180;
-	parameter E3 = 110;
-	parameter E4 = 314;
+	parameter ET0 = 50;
+	parameter ET1 = 100;
+	parameter ET2 = 150;
+	parameter ET3 = 110;
+	parameter ET4 = 80;
+	
+	parameter EB0 = 300 - 50;
+	parameter EB1 = 300 - 80;
+	parameter EB2 = 300 - 70;
+	parameter EB3 = 300 - 30;
+	parameter EB4 = 300 - 20;
 	
 	input [2:0] I;
 	
@@ -70,68 +76,68 @@ module Y_ROM(I,
          case (I)
             3'b000: 
 				begin 
-					YEdge0T <= E0;
-					YEdge0B <= E0 + 100;
-					YEdge1T <= E1;
-					YEdge1B <= E1 + 100;
-					YEdge2T <= E2;
-					YEdge2B <= E2 + 100;
-					YEdge3T <= E3;
-					YEdge3B <= E3 + 100;
-					YEdge4T <= E4;
-					YEdge4B <= E4 + 100;
+					YEdge0T <= ET0;
+					YEdge0B <= EB0;
+					YEdge1T <= ET1;
+					YEdge1B <= EB1;
+					YEdge2T <= ET2;
+					YEdge2B <= EB2;
+					YEdge3T <= ET3;
+					YEdge3B <= EB3;
+					YEdge4T <= ET4;
+					YEdge4B <= EB4;
 				end
             3'b001:
 				begin 
-					YEdge0T <= E1;
-					YEdge0B <= E1 + 100;
-					YEdge1T <= E2;
-					YEdge1B <= E2 + 100;
-					YEdge2T <= E3;
-					YEdge2B <= E3 + 100;
-					YEdge3T <= E4;
-					YEdge3B <= E4 + 100;
-					YEdge4T <= E0;
-					YEdge4B <= E0 + 100;
+					YEdge0T <= ET1;
+					YEdge0B <= EB1;
+					YEdge1T <= ET2;
+					YEdge1B <= EB2;
+					YEdge2T <= ET3;
+					YEdge2B <= EB3;
+					YEdge3T <= ET4;
+					YEdge3B <= EB4;
+					YEdge4T <= ET0;
+					YEdge4B <= EB0;
 				end
             3'b010:
 				begin 
-					YEdge0T <= E2;
-					YEdge0B <= E2 + 100;
-					YEdge1T <= E3;
-					YEdge1B <= E3 + 100;
-					YEdge2T <= E4;
-					YEdge2B <= E4 + 100;
-					YEdge3T <= E0;
-					YEdge3B <= E0 + 100;
-					YEdge4T <= E1;
-					YEdge4B <= E1 + 100;
+					YEdge0T <= ET2;
+					YEdge0B <= EB2;
+					YEdge1T <= ET3;
+					YEdge1B <= EB3;
+					YEdge2T <= ET4;
+					YEdge2B <= EB4;
+					YEdge3T <= ET0;
+					YEdge3B <= EB0;
+					YEdge4T <= ET1;
+					YEdge4B <= EB1;
 				end
             3'b011:
 				begin 
-					YEdge0T <= E3;
-					YEdge0B <= E3 + 100;
-					YEdge1T <= E4;
-					YEdge1B <= E4 + 100;
-					YEdge2T <= E0;
-					YEdge2B <= E0 + 100;
-					YEdge3T <= E1;
-					YEdge3B <= E1 + 100;
-					YEdge4T <= E2;
-					YEdge4B <= E2 + 100;
+					YEdge0T <= ET3;
+					YEdge0B <= EB3;
+					YEdge1T <= ET4;
+					YEdge1B <= EB4;
+					YEdge2T <= ET0;
+					YEdge2B <= EB0;
+					YEdge3T <= ET1;
+					YEdge3B <= EB1;
+					YEdge4T <= ET2;
+					YEdge4B <= EB2;
 				end
 			3'b100:
-				begin
-					YEdge0T <= E4;
-					YEdge0B <= E4 + 100;
-					YEdge1T <= E0;
-					YEdge1B <= E0 + 100;
-					YEdge2T <= E1;
-					YEdge2B <= E1 + 100;
-					YEdge3T <= E2;
-					YEdge3B <= E2 + 100;
-					YEdge4T <= E3;
-					YEdge4B <= E3 + 100;
+				begin 
+					YEdge0T <= ET4;
+					YEdge0B <= EB4;
+					YEdge1T <= ET0;
+					YEdge1B <= EB0;
+					YEdge2T <= ET1;
+					YEdge2B <= EB1;
+					YEdge3T <= ET2;
+					YEdge3B <= EB2;
+					YEdge4T <= ET3;
+					YEdge4B <= EB3;
 				end
             default:
 				begin 
