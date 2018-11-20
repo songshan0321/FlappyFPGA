@@ -115,7 +115,7 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	/////////////////////////////////////////////////////////////////
 	///////////////		VGA control starts here		/////////////////
 	/////////////////////////////////////////////////////////////////
-	
+/*	
 	wire SEG1 = CounterX >=5 && CounterX <=10 && CounterY >= 5 && CounterY <=55;
 	wire SEG2 = CounterX >=5 && CounterX <=10 && CounterY >= 55 && CounterY <= 105;
 	wire SEG3 = CounterX >=55 && CounterX <= 60 && CounterY >= 5 && CounterY <=55;
@@ -144,7 +144,7 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 			default: VGA_NUM_OUTPUT = 0; // default is not needed as we covered all cases
 		endcase
 	end
-	
+*/	
 	
 	// red = score || bird
 	reg [19:0] sq_figure [0:19];
@@ -177,27 +177,21 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	  sq_figure[19][19:0] <= 20'b00000001111100000000;
 	end
 	
-	wire R = VGA_NUM_OUTPUT || ((sq_figure[sq_fig_y][sq_fig_x] == 1) &&
+	wire Bird = ((sq_figure[sq_fig_y][sq_fig_x] == 1) &&
 		(CounterY>=(Bird_Y_T) && CounterY<=(Bird_Y_B) && 
 		CounterX>=(Bird_X_L) && CounterX<=(Bird_X_R)));
-		
+	
+	wire Pipe = ((CounterX>=X_Edge_OO_L && CounterX<=X_Edge_OO_R && (CounterY<=Y_Edge_00_Top || CounterY>=Y_Edge_00_Bottom)) ||
+		(CounterX>=X_Edge_O1_L && CounterX<=X_Edge_O1_R && (CounterY<=Y_Edge_01_Top || CounterY>=Y_Edge_01_Bottom)) ||
+		(CounterX>=X_Edge_O2_L && CounterX<=X_Edge_O2_R && (CounterY<=Y_Edge_02_Top || CounterY>=Y_Edge_02_Bottom)) ||
+		(CounterX>=X_Edge_O3_L && CounterX<=X_Edge_O3_R && (CounterY<=Y_Edge_03_Top || CounterY>=Y_Edge_03_Bottom)) ||
+		(CounterX>=X_Edge_O4_L && CounterX<=X_Edge_O4_R && (CounterY<=Y_Edge_04_Top || CounterY>=Y_Edge_04_Bottom)));
+
+	wire R = Pipe;
 	//green = pipes
-	wire G = Flash_Blue ||
-		~VGA_NUM_OUTPUT && ((CounterX>=X_Edge_OO_L && CounterX<=X_Edge_OO_R && CounterY<=Y_Edge_00_Top) ||
-		(CounterX>=X_Edge_O1_L && CounterX<=X_Edge_O1_R && CounterY<=Y_Edge_01_Top) ||
-		(CounterX>=X_Edge_O2_L && CounterX<=X_Edge_O2_R && CounterY<=Y_Edge_02_Top) ||
-		(CounterX>=X_Edge_O3_L && CounterX<=X_Edge_O3_R && CounterY<=Y_Edge_03_Top) ||
-		(CounterX>=X_Edge_O4_L && CounterX<=X_Edge_O4_R && CounterY<=Y_Edge_04_Top)) && 
-		~(CounterY>=(Bird_Y_T) && CounterY<=(Bird_Y_B) && 
-		CounterX>=(Bird_X_L) && CounterX<=(Bird_X_R));
+	wire G = !Bird && Pipe;
 		
-	wire B = ~VGA_NUM_OUTPUT && ( (CounterX>=X_Edge_OO_L && CounterX<=X_Edge_OO_R && CounterY>=Y_Edge_00_Bottom) ||
-		(CounterX>=X_Edge_O1_L && CounterX<=X_Edge_O1_R && CounterY>=Y_Edge_01_Bottom) ||
-		(CounterX>=X_Edge_O2_L && CounterX<=X_Edge_O2_R && CounterY>=Y_Edge_02_Bottom) ||
-		(CounterX>=X_Edge_O3_L && CounterX<=X_Edge_O3_R && CounterY>=Y_Edge_03_Bottom) ||
-		(CounterX>=X_Edge_O4_L && CounterX<=X_Edge_O4_R && CounterY>=Y_Edge_04_Bottom)) && 
-		~(CounterY>=(Bird_Y_T) && CounterY<=(Bird_Y_B) && 
-		CounterX>=(Bird_X_L) && CounterX<=(Bird_X_R));
+	wire B = Flash_Blue;
 	
 	always @(posedge sys_clk)
 	begin
@@ -206,6 +200,7 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 		vga_b[1:0] <= {B & inDisplayArea, B & inDisplayArea};
 	end
 	
+
 	//Flash when you lost
 	
 	reg Flash_Blue;
