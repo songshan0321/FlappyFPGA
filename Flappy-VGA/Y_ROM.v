@@ -20,12 +20,13 @@
 // This holds default heights (Y coordinates) for pipe obstacles.
 // Coordinate is the top edge of the pipe. Bottom edge is calculated in obstacle logic.
 //////////////////////////////////////////////////////////////////////////////////
-module Y_ROM(I,
+module Y_ROM(I, IC,
 	YEdge0T, YEdge0B,
 	YEdge1T, YEdge1B,
 	YEdge2T, YEdge2B,
 	YEdge3T, YEdge3B,
-	YEdge4T, YEdge4B
+	YEdge4T, YEdge4B,
+	YCoin0, YCoin1, YCoin2, YCoin3, YCoin4
 	);
 	
 	parameter ET0 = 50;
@@ -40,37 +41,51 @@ module Y_ROM(I,
 	parameter EB3 = 300 - 30;
 	parameter EB4 = 300 - 20;
 	
+	// Coins' y coordinate
+	parameter C0 = EB0 - 30;
+	parameter C1 = EB1 - 30;
+	parameter C2 = EB2 - 30;
+	parameter C3 = EB3 - 30;
+	parameter C4 = EB4 - 30;
+	
 	input [2:0] I;
+	input [2:0] IC;
 	
 	output [9:0] YEdge0T;
 	output [9:0] YEdge0B;
-	
 	output [9:0] YEdge1T;
 	output [9:0] YEdge1B;
-	
 	output [9:0] YEdge2T;
 	output [9:0] YEdge2B;
-	
 	output [9:0] YEdge3T;
 	output [9:0] YEdge3B;
-	
 	output [9:0] YEdge4T;
 	output [9:0] YEdge4B;
+	
+	// coin
+	output [9:0] YCoin0;
+	output [9:0] YCoin1;
+	output [9:0] YCoin2;
+	output [9:0] YCoin3;
+	output [9:0] YCoin4;
 
 	reg [9:0] YEdge0T;
 	reg [9:0] YEdge0B;
-	
 	reg [9:0] YEdge1T;
 	reg [9:0] YEdge1B;
-	
 	reg [9:0] YEdge2T;
 	reg [9:0] YEdge2B;
-	
 	reg [9:0] YEdge3T;
 	reg [9:0] YEdge3B;
-	
 	reg [9:0] YEdge4T;
-	reg [9:0] YEdge4B;	
+	reg [9:0] YEdge4B;
+
+	// coin
+	reg [9:0] YCoin0;
+	reg [9:0] YCoin1;
+	reg [9:0] YCoin2;
+	reg [9:0] YCoin3;
+	reg [9:0] YCoin4;	
  
    always @(I) //instead of always@(I)
          case (I)
@@ -153,5 +168,57 @@ module Y_ROM(I,
 					YEdge4B <= 10'bXXXXXXXXXX;
 				end
          endcase	 
+			
+	always @(IC) // Index of selected coin
+         case (IC)
+            3'b000: 
+				begin 
+					YCoin0 <= C0;
+					YCoin1 <= C1;
+					YCoin2 <= C2;
+					YCoin3 <= C3;
+					YCoin4 <= C4;	
+				end
+            3'b001:
+				begin 
+					YCoin0 <= C1;
+					YCoin1 <= C2;
+					YCoin2 <= C3;
+					YCoin3 <= C4;
+					YCoin4 <= C0;	
+				end
+            3'b010:
+				begin 
+					YCoin0 <= C2;
+					YCoin1 <= C3;
+					YCoin2 <= C4;
+					YCoin3 <= C0;
+					YCoin4 <= C1;	
+				end
+            3'b011:
+				begin 
+					YCoin0 <= C3;
+					YCoin1 <= C4;
+					YCoin2 <= C0;
+					YCoin3 <= C1;
+					YCoin4 <= C2;	
+				end
+			3'b100:
+				begin 
+					YCoin0 <= C4;
+					YCoin1 <= C0;
+					YCoin2 <= C1;
+					YCoin3 <= C2;
+					YCoin4 <= C3;
+				end
+            default:
+				begin 
+					YCoin0 <= 10'bXXXXXXXXXX;
+					YCoin1 <= 10'bXXXXXXXXXX;
+					YCoin2 <= 10'bXXXXXXXXXX;
+					YCoin3 <= 10'bXXXXXXXXXX;
+					YCoin4 <= 10'bXXXXXXXXXX;
+				end
+         endcase
 
 endmodule

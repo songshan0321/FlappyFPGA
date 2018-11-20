@@ -37,37 +37,54 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	// Inputs to the core design
 	wire Start, Ack;
 	wire [2:0] X_Index; // index of pipe to read
+	wire [2:0] X_Index_Coin; // index of coin to read
 	// Outputs from the core design
 	wire [9:0] X_Edge_OO_L;
 	wire [9:0] X_Edge_OO_R;
-	
 	wire [9:0] X_Edge_O1_L;
 	wire [9:0] X_Edge_O1_R;
-	
 	wire [9:0] X_Edge_O2_L;
 	wire [9:0] X_Edge_O2_R;
-	
 	wire [9:0] X_Edge_O3_L;
 	wire [9:0] X_Edge_O3_R;
-	
 	wire [9:0] X_Edge_O4_L;
 	wire [9:0] X_Edge_O4_R;
-
+	// Coin's x
+	wire [9:0] X_Coin_OO_L;
+	wire [9:0] X_Coin_O1_L;
+	wire [9:0] X_Coin_O2_L;
+	wire [9:0] X_Coin_O3_L;
+	wire [9:0] X_Coin_O4_L;
+	wire [9:0] X_Coin_OO_R;
+	wire [9:0] X_Coin_O1_R;
+	wire [9:0] X_Coin_O2_R;
+	wire [9:0] X_Coin_O3_R;
+	wire [9:0] X_Coin_O4_R;
+	
 	wire [9:0] Y_Edge_00_Top;
 	wire [9:0] Y_Edge_00_Bottom;
-	
 	wire [9:0] Y_Edge_01_Top;
 	wire [9:0] Y_Edge_01_Bottom;
-		
 	wire [9:0] Y_Edge_02_Top;
 	wire [9:0] Y_Edge_02_Bottom;
-		
 	wire [9:0] Y_Edge_03_Top;
 	wire [9:0] Y_Edge_03_Bottom;
-		
 	wire [9:0] Y_Edge_04_Top;
 	wire [9:0] Y_Edge_04_Bottom;
-	
+	// Coin's y
+	wire [9:0] Y_Coin_00;
+	wire [9:0] Y_Coin_01;
+	wire [9:0] Y_Coin_02;
+	wire [9:0] Y_Coin_03;
+	wire [9:0] Y_Coin_04;
+	// Show_Coin
+//	wire [4:0] Show_Coin;
+	reg [4:0] Show_Coin;
+	// Signanl from coin logic
+	wire [1:0] get_Zero;
+	// Signanl from RAM for coin shift
+	wire [1:0] shift_Coin;
+
 	wire Done;
 	wire q_Initial, q_Check, q_Lose;
 	wire q_InitialX, q_Count, q_Stop;
@@ -79,9 +96,6 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	wire [9:0] Bird_X_R;
 	wire [9:0] Bird_Y_B;
 	wire BtnC_Pulse, BtnL_Pulse, BtnD_Pulse, BtnR_Pulse, BtnU_Pulse;
-	wire Jump;
-	wire [9:0] PositiveSpeed;
-	wire [9:0] NegativeSpeed;
 	
 	wire [1:0] 	ssdscan_clk;
 	reg [1:0] state_num;
@@ -145,6 +159,36 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 		endcase
 	end
 */	
+	////////////////////// Show Coin Logic ////////////////////////////////
+	initial Show_Coin = {1,1,1,1,1};
+	always @ (posedge sys_clk) // ? board clk ?
+	begin
+	if (get_Zero && shift_Coin)
+	begin
+//		Show_Coin[0] <= 0;
+		Show_Coin[0] = Show_Coin[1];
+		Show_Coin[1] = Show_Coin[2];
+		Show_Coin[2] = Show_Coin[3];
+		Show_Coin[3] = Show_Coin[4];
+		Show_Coin[4] = 1;
+	end
+		
+	else if (!get_Zero && shift_Coin)
+	begin
+		Show_Coin[0] = Show_Coin[1];
+		Show_Coin[1] = Show_Coin[2];
+		Show_Coin[2] = Show_Coin[3];
+		Show_Coin[3] = Show_Coin[4];
+		Show_Coin[4] = 1;
+	end
+		
+	else if (get_Zero && !shift_Coin)
+		Show_Coin[0] = 0;
+		
+	end
+	
+	
+	///////////////////////////////////////////////////////////////////////
 	
 	// red = score || bird
 	reg [19:0] sq_figure [0:19];
@@ -155,16 +199,16 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	assign sq_fig_y = CounterY - Bird_Y_T; // our figure's y axis when in square boundary
 		
 	initial begin //while RESET is high init counters
-	  sq_figure[0][19:0] <= 20'b10000000000000000000;
-	  sq_figure[1][19:0] <= 20'b11100001111100000000;
-	  sq_figure[2][19:0] <= 20'b11111111111111000000;
-	  sq_figure[3][19:0] <= 20'b01111111111111110000;
-	  sq_figure[4][19:0] <= 20'b00111111111111111000;
-	  sq_figure[5][19:0] <= 20'b00111111111111111000;
-	  sq_figure[6][19:0] <= 20'b01111111111111111100;
-	  sq_figure[7][19:0] <= 20'b01111111111111111100;
-	  sq_figure[8][19:0] <= 20'b11111111111111111110;
-	  sq_figure[9][19:0] <= 20'b11111111111111111110;
+	  sq_figure[0][19:0]  <= 20'b10000000000000000000;
+	  sq_figure[1][19:0]  <= 20'b11100001111100000000;
+	  sq_figure[2][19:0]  <= 20'b11111111111111000000;
+	  sq_figure[3][19:0]  <= 20'b01111111111111110000;
+	  sq_figure[4][19:0]  <= 20'b00111111111111111000;
+	  sq_figure[5][19:0]  <= 20'b00111111111111111000;
+	  sq_figure[6][19:0]  <= 20'b01111111111111111100;
+	  sq_figure[7][19:0]  <= 20'b01111111111111111100;
+	  sq_figure[8][19:0]  <= 20'b11111111111111111110;
+	  sq_figure[9][19:0]  <= 20'b11111111111111111110;
 	  sq_figure[10][19:0] <= 20'b11111111111111111110;
 	  sq_figure[11][19:0] <= 20'b11111111111111111110;
 	  sq_figure[12][19:0] <= 20'b11111111111111111110;
@@ -186,12 +230,18 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 		(CounterX>=X_Edge_O2_L && CounterX<=X_Edge_O2_R && (CounterY<=Y_Edge_02_Top || CounterY>=Y_Edge_02_Bottom)) ||
 		(CounterX>=X_Edge_O3_L && CounterX<=X_Edge_O3_R && (CounterY<=Y_Edge_03_Top || CounterY>=Y_Edge_03_Bottom)) ||
 		(CounterX>=X_Edge_O4_L && CounterX<=X_Edge_O4_R && (CounterY<=Y_Edge_04_Top || CounterY>=Y_Edge_04_Bottom)));
-
-	wire R = Pipe;
-	//green = pipes
-	wire G = !Bird && Pipe;
 		
-	wire B = Flash_Blue;
+	wire Coin_0 = Show_Coin[0] && CounterX>=X_Coin_OO_L && CounterX<=X_Coin_OO_R && CounterY>=Y_Coin_00 && CounterY<=Y_Coin_00+20;
+	wire Coin_1 = Show_Coin[1] && CounterX>=X_Coin_O1_L && CounterX<=X_Coin_O1_R && CounterY>=Y_Coin_01 && CounterY<=Y_Coin_01+20;
+	wire Coin_2 = Show_Coin[2] && CounterX>=X_Coin_O2_L && CounterX<=X_Coin_O2_R && CounterY>=Y_Coin_02 && CounterY<=Y_Coin_02+20;
+	wire Coin_3 = Show_Coin[3] && CounterX>=X_Coin_O3_L && CounterX<=X_Coin_O3_R && CounterY>=Y_Coin_03 && CounterY<=Y_Coin_03+20;
+	wire Coin_4 = Show_Coin[4] && CounterX>=X_Coin_O4_L && CounterX<=X_Coin_O4_R && CounterY>=Y_Coin_04 && CounterY<=Y_Coin_04+20;
+
+	wire R = Bird || Pipe;
+	//green = pipes
+	wire G = Pipe;
+	
+   wire B = Flash_Blue || Coin_0 || Coin_1 || Coin_2 || Coin_3 || Coin_4;
 	
 	always @(posedge sys_clk)
 	begin
@@ -302,12 +352,16 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	*				X_Edge_O1 
 	*				X_Edge_O2
 	* 				X_Edge_O3
+	*				X_Edge_O4
 	*				out_pipe - index of the pipe in scope, used to pass into Y_ROM
 	*				Score - player's score, which increments when an edge leaves scope and a new one enters
 	*/
-	X_RAM_NOREAD x_ram(.clk(DIV_CLK[19]),.reset(BtnR),.Start(BtnC), .Stop(q_Lose), .Ack(BtnD), .out_pipe(X_Index), 
+	X_RAM_NOREAD x_ram(.clk(DIV_CLK[19]),.reset(BtnR),.Start(BtnC), .Stop(q_Lose), .Ack(BtnD), .out_pipe(X_Index), .out_coin(X_Index_Coin),
 		.Score(Score),.X_Edge_OO_L(X_Edge_OO_L), .X_Edge_O1_L(X_Edge_O1_L), .X_Edge_O2_L(X_Edge_O2_L), .X_Edge_O3_L(X_Edge_O3_L),.X_Edge_O4_L(X_Edge_O4_L), 
 		.X_Edge_OO_R(X_Edge_OO_R), .X_Edge_O1_R(X_Edge_O1_R), .X_Edge_O2_R(X_Edge_O2_R), .X_Edge_O3_R(X_Edge_O3_R), .X_Edge_O4_R(X_Edge_O4_R), 
+		.X_Coin_OO_L(X_Coin_OO_L), .X_Coin_O1_L(X_Coin_O1_L), .X_Coin_O2_L(X_Coin_O2_L), .X_Coin_O3_L(X_Coin_O3_L), .X_Coin_O4_L(X_Coin_O4_L),
+		.X_Coin_OO_R(X_Coin_OO_R), .X_Coin_O1_R(X_Coin_O1_R), .X_Coin_O2_R(X_Coin_O2_R), .X_Coin_O3_R(X_Coin_O3_R), .X_Coin_O4_R(X_Coin_O4_R),
+		.shift_Coin(shift_Coin),
 		.Q_Initial(q_InitialX), .Q_Count(q_Count), .Q_Stop(q_Stop));	
 	
 	/*	Y_ROM
@@ -316,8 +370,9 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	*				Y_Edge_O1
 	*				Y_Edge_O2
 	*				Y_Edge_O3
+	*				Y_Edge_O4
 	*/
-	Y_ROM y_rom(.I(X_Index),
+	Y_ROM y_rom(.I(X_Index), .IC(X_Index_Coin),
 		.YEdge0T(Y_Edge_00_Top), 
 		.YEdge0B(Y_Edge_00_Bottom),
 		.YEdge1T(Y_Edge_01_Top), 
@@ -327,7 +382,12 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 		.YEdge3T(Y_Edge_03_Top),
 		.YEdge3B(Y_Edge_03_Bottom),
 		.YEdge4T(Y_Edge_04_Top),
-		.YEdge4B(Y_Edge_04_Bottom)
+		.YEdge4B(Y_Edge_04_Bottom),
+		.YCoin0(Y_Coin_00), 
+		.YCoin1(Y_Coin_01),
+		.YCoin2(Y_Coin_02),
+		.YCoin3(Y_Coin_03),
+		.YCoin4(Y_Coin_04)
 		);
 	/* 	obstacle_logic
 	* 	INPUTS:		Clk
@@ -350,6 +410,15 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 		.X_Edge_Right(X_Edge_OO_R),
 		.Y_Edge_Top(Y_Edge_00_Top),
 		.Y_Edge_Bottom(Y_Edge_00_Bottom),
+		.Bird_X_L(Bird_X_L), .Bird_X_R(Bird_X_R), .Bird_Y_T(Bird_Y_T), .Bird_Y_B(Bird_Y_B));
+	
+		
+	coin_logic coin_log(.Clk(DIV_CLK[1]),.reset(BtnR),
+		.Start(BtnC), .Ack(BtnC), 
+		.X_Coin_OO_L(X_Coin_OO_L),
+		.X_Coin_OO_R(X_Coin_OO_R),
+		.Y_Coin_00(Y_Coin_00),
+		.get_Zero(get_Zero),
 		.Bird_X_L(Bird_X_L), .Bird_X_R(Bird_X_R), .Bird_Y_T(Bird_Y_T), .Bird_Y_B(Bird_Y_B));
 			
 	/*	flight_control
