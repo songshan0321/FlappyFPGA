@@ -89,7 +89,7 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	wire q_Initial, q_Check, q_Lose;
 	wire q_InitialX, q_Count, q_Stop;
 	wire q_InitialF, q_Flight, q_StopF;
-	wire [3:0]	Score;
+	wire [9:0]	Score;
 	
 	wire [9:0] Bird_X_L;
 	wire [9:0] Bird_Y_T;
@@ -285,15 +285,16 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	reg 	[3:0]	SSD;
 	wire 	[3:0]	SSD0, SSD1, SSD2, SSD3;
 	
-	assign SSD0 = Score[3:0]; // pipe index
-	assign SSD1 = 0;
-	assign SSD2 = 0;
+	assign SSD0 = Score[9:0]%10; 
+	assign SSD1 = (Score[9:0]/10)%10;
+	assign SSD2 = (Score[9:0]/100)%10;
 	assign SSD3 = 0;
 	
 	// need a scan clk for the seven segment display 
 	// 191Hz (50MHz / 2^18) works well
 	assign ssdscan_clk = DIV_CLK[19:18];	
 	assign An0	= !(~(ssdscan_clk[1]) && ~(ssdscan_clk[0]));  // when ssdscan_clk = 00
+	assign An1	= !(~(ssdscan_clk[1]) &&  (ssdscan_clk[0]));  // when ssdscan_clk = 01
 	assign An1	= !(~(ssdscan_clk[1]) &&  (ssdscan_clk[0]));  // when ssdscan_clk = 01
 	assign An2	= !( (ssdscan_clk[1]) && ~(ssdscan_clk[0]));  // when ssdscan_clk = 10
 	assign An3	= !( (ssdscan_clk[1]) &&  (ssdscan_clk[0]));  // when ssdscan_clk = 11	
@@ -356,7 +357,7 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	*				Score - player's score, which increments when an edge leaves scope and a new one enters
 	*/
 	X_RAM_NOREAD x_ram(.clk(DIV_CLK[19]),.reset(BtnR),.Start(BtnC), .Stop(q_Lose), .Ack(BtnD), .out_pipe(X_Index), .out_coin(X_Index_Coin),
-		.Score(Score),.X_Edge_OO_L(X_Edge_OO_L), .X_Edge_O1_L(X_Edge_O1_L), .X_Edge_O2_L(X_Edge_O2_L), .X_Edge_O3_L(X_Edge_O3_L),.X_Edge_O4_L(X_Edge_O4_L), 
+		.X_Edge_OO_L(X_Edge_OO_L), .X_Edge_O1_L(X_Edge_O1_L), .X_Edge_O2_L(X_Edge_O2_L), .X_Edge_O3_L(X_Edge_O3_L),.X_Edge_O4_L(X_Edge_O4_L), 
 		.X_Edge_OO_R(X_Edge_OO_R), .X_Edge_O1_R(X_Edge_O1_R), .X_Edge_O2_R(X_Edge_O2_R), .X_Edge_O3_R(X_Edge_O3_R), .X_Edge_O4_R(X_Edge_O4_R), 
 		.X_Coin_OO_L(X_Coin_OO_L), .X_Coin_O1_L(X_Coin_O1_L), .X_Coin_O2_L(X_Coin_O2_L), .X_Coin_O3_L(X_Coin_O3_L), .X_Coin_O4_L(X_Coin_O4_L),
 		.X_Coin_OO_R(X_Coin_OO_R), .X_Coin_O1_R(X_Coin_O1_R), .X_Coin_O2_R(X_Coin_O2_R), .X_Coin_O3_R(X_Coin_O3_R), .X_Coin_O4_R(X_Coin_O4_R),
@@ -371,7 +372,7 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	*				Y_Edge_O3
 	*				Y_Edge_O4
 	*/
-	Y_ROM y_rom(.I(X_Index), .IC(X_Index_Coin),
+	Y_ROM y_rom(.clk(DIV_CLK[19]), .I(X_Index), .IC(X_Index_Coin),
 		.YEdge0T(Y_Edge_00_Top), 
 		.YEdge0B(Y_Edge_00_Bottom),
 		.YEdge1T(Y_Edge_01_Top), 
@@ -412,7 +413,7 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 		.Bird_X_L(Bird_X_L), .Bird_X_R(Bird_X_R), .Bird_Y_T(Bird_Y_T), .Bird_Y_B(Bird_Y_B));
 	
 		
-	coin_logic coin_log(.Clk(DIV_CLK[1]),.reset(BtnR),
+	coin_logic coin_log(.Clk(DIV_CLK[1]),.reset(BtnR), .Score(Score),
 		.Start(BtnC), .Ack(BtnC), 
 		.X_Coin_OO_L(X_Coin_OO_L),
 		.X_Coin_OO_R(X_Coin_OO_R),

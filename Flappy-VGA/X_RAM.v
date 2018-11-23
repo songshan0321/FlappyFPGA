@@ -23,7 +23,7 @@
 // I guess the clock would be at whatever rate ... not sure actually;
 // Coordinate is the left edge of the pipe. Right edge is calculated in obstacle logic.
 //////////////////////////////////////////////////////////////////////////////////
-module X_RAM_NOREAD(clk,reset,Start, Stop, Ack, out_pipe, out_coin, Score,
+module X_RAM_NOREAD(clk,reset,Start, Stop, Ack, out_pipe, out_coin,
 	X_Edge_OO_L,
 	X_Edge_O1_L,
 	X_Edge_O2_L,
@@ -84,7 +84,6 @@ module X_RAM_NOREAD(clk,reset,Start, Stop, Ack, out_pipe, out_coin, Score,
  
  output	[2:0] out_pipe;
  output  [2:0] out_coin;
- output	[3:0] Score;
  output 	Q_Initial, Q_Count, Q_Stop;
  
  reg [9:0] array_X_Left [4:0]; // 2D array X to store five 10 bit pipes
@@ -93,7 +92,6 @@ module X_RAM_NOREAD(clk,reset,Start, Stop, Ack, out_pipe, out_coin, Score,
  reg [9:0] array_X_Coin_Right [4:0]; // 2D array X to store five 10 bit coins
  reg [2:0] out_pipe;
  reg [2:0] out_coin;
- reg [3:0] Score;
  
  reg shift_Coin;
  
@@ -167,7 +165,6 @@ integer i;
 				QInitial:
 				begin
 				
-						Score <= 0;
 						array_X_Left[0] <= X0_init;
 						array_X_Left[1] <= X1_init;
 						array_X_Left[2] <= X2_init;
@@ -266,7 +263,6 @@ integer i;
 							if(out_temp_4 == 4)
 								out_temp_4 <= 0;	
 							
-							if(~Stop) Score <= Score + 4'd1; // increment score once a pipe passes the bird
 						end
 						
 						// Coin

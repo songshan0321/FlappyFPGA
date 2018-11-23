@@ -20,7 +20,7 @@
 // This holds default heights (Y coordinates) for pipe obstacles.
 // Coordinate is the top edge of the pipe. Bottom edge is calculated in obstacle logic.
 //////////////////////////////////////////////////////////////////////////////////
-module Y_ROM(I, IC,
+module Y_ROM(clk, I, IC,
 	YEdge0T, YEdge0B,
 	YEdge1T, YEdge1B,
 	YEdge2T, YEdge2B,
@@ -35,21 +35,22 @@ module Y_ROM(I, IC,
 	parameter ET3 = 110;
 	parameter ET4 = 80;
 	
-	parameter EB0 = 300 - 50;
-	parameter EB1 = 300 - 80;
-	parameter EB2 = 300 - 70;
-	parameter EB3 = 300 - 30;
-	parameter EB4 = 300 - 20;
+	parameter EB0 = 400 - 50;
+	parameter EB1 = 400 - 80;
+	parameter EB2 = 400 - 30;
+	parameter EB3 = 400 - 50;
+	parameter EB4 = 400 - 10;
 	
-	// Coins' y coordinate
-	parameter C0 = EB0 - 30;
-	parameter C1 = EB1 - 30;
-	parameter C2 = EB2 - 30;
-	parameter C3 = EB3 - 30;
-	parameter C4 = EB4 - 30;
+	// Random coins' y coordinate: (val - A)*(b-a)/(B-A) + a , if [A,B] -> [a,b]
+	reg [9:0] C0 = (ET0+10);
+	reg [9:0] C1 = (ET1+10);
+	reg [9:0] C2 = (ET2+10);
+	reg [9:0] C3 = (ET3+10);
+	reg [9:0] C4 = (ET4+10);
 	
 	input [2:0] I;
 	input [2:0] IC;
+	input clk;
 	
 	output [9:0] YEdge0T;
 	output [9:0] YEdge0B;
@@ -86,6 +87,10 @@ module Y_ROM(I, IC,
 	reg [9:0] YCoin2;
 	reg [9:0] YCoin3;
 	reg [9:0] YCoin4;	
+	
+	wire [12:0] random;
+	reg enable = 1;
+	LFSR lfsr(.clk(IC), .reset(BtnR), .out(random), .enable(enable));
  
    always @(I) //instead of always@(I)
          case (I)
@@ -175,7 +180,7 @@ module Y_ROM(I, IC,
 				begin 
 					YCoin0 <= C0;
 					YCoin1 <= C1;
-					YCoin2 <= C2;
+					YCoin2 <= (ET2+10)+random%((EB2-30)-(ET2+10));
 					YCoin3 <= C3;
 					YCoin4 <= C4;	
 				end
@@ -183,7 +188,7 @@ module Y_ROM(I, IC,
 				begin 
 					YCoin0 <= C1;
 					YCoin1 <= C2;
-					YCoin2 <= C3;
+					YCoin2 <= (ET3+10)+random%((EB3-30)-(ET3+10));
 					YCoin3 <= C4;
 					YCoin4 <= C0;	
 				end
@@ -191,7 +196,7 @@ module Y_ROM(I, IC,
 				begin 
 					YCoin0 <= C2;
 					YCoin1 <= C3;
-					YCoin2 <= C4;
+					YCoin2 <= (ET4+10)+random%((EB4-30)-(ET4+10));
 					YCoin3 <= C0;
 					YCoin4 <= C1;	
 				end
@@ -199,7 +204,7 @@ module Y_ROM(I, IC,
 				begin 
 					YCoin0 <= C3;
 					YCoin1 <= C4;
-					YCoin2 <= C0;
+					YCoin2 <= (ET0+10)+random%((EB0-30)-(ET0+10));
 					YCoin3 <= C1;
 					YCoin4 <= C2;	
 				end
@@ -207,7 +212,7 @@ module Y_ROM(I, IC,
 				begin 
 					YCoin0 <= C4;
 					YCoin1 <= C0;
-					YCoin2 <= C1;
+					YCoin2 <= (ET1+10)+random%((EB1-30)-(ET1+10));
 					YCoin3 <= C2;
 					YCoin4 <= C3;
 				end
@@ -218,6 +223,30 @@ module Y_ROM(I, IC,
 					YCoin2 <= 10'bXXXXXXXXXX;
 					YCoin3 <= 10'bXXXXXXXXXX;
 					YCoin4 <= 10'bXXXXXXXXXX;
+				end
+         endcase
+			
+	always @(IC) // Index of selected coin
+         case (IC)
+            3'b000: 
+				begin 
+					C2 <= (ET2+10)+random%((EB2-30)-(ET2+10));
+				end
+            3'b001:
+				begin 
+					C3 <= (ET3+10)+random%((EB3-30)-(ET3+10));
+				end
+            3'b010:
+				begin 
+					C4 <= (ET4+10)+random%((EB4-30)-(ET4+10));
+				end
+            3'b011:
+				begin 
+					C0 <= (ET0+10)+random%((EB0-30)-(ET0+10));	
+				end
+			3'b100:
+				begin 
+					C1 <= (ET1+10)+random%((EB1-30)-(ET1+10));
 				end
          endcase
 
