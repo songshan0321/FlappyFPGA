@@ -50,11 +50,14 @@ initial get_Zero = 0;
 
 always @ (posedge Clk)
 begin
-	if((Bird_Y_B >= Y_Coin_00+COIN_HEIGHT || Bird_Y_T <= Y_Coin_00)
+	if(((Bird_Y_B >= Y_Coin_00 && Bird_Y_B <= Y_Coin_00+COIN_HEIGHT) || (Bird_Y_T <= Y_Coin_00+COIN_HEIGHT && Bird_Y_T >= Y_Coin_00))
 		&& (Bird_X_R > X_Coin_OO_L && Bird_X_L < X_Coin_OO_R))
 		begin
 			get_Zero <= 1;
 		end
+	else
+		get_Zero <= 0;
+		
 end
 
 // TODO work out how to keep score as the bird passes pipes. 

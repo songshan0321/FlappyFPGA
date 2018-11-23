@@ -160,30 +160,29 @@ module vga_top(ClkPort, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	end
 */	
 	////////////////////// Show Coin Logic ////////////////////////////////
-	initial Show_Coin = {1,1,1,1,1};
-	always @ (posedge sys_clk) // ? board clk ?
+	initial Show_Coin = {0,0,0,0,0};
+	
+	always @ (posedge DIV_CLK[19]) //
 	begin
-	if (get_Zero && shift_Coin)
+	if (q_Initial)
+		Show_Coin <= {0,0,0,0,0};
+	if (get_Zero)
 	begin
-//		Show_Coin[0] <= 0;
-		Show_Coin[0] = Show_Coin[1];
-		Show_Coin[1] = Show_Coin[2];
-		Show_Coin[2] = Show_Coin[3];
-		Show_Coin[3] = Show_Coin[4];
-		Show_Coin[4] = 1;
+		Show_Coin[0] <= 0;
 	end
 		
-	else if (!get_Zero && shift_Coin)
+	if (shift_Coin)
 	begin
-		Show_Coin[0] = Show_Coin[1];
-		Show_Coin[1] = Show_Coin[2];
-		Show_Coin[2] = Show_Coin[3];
-		Show_Coin[3] = Show_Coin[4];
-		Show_Coin[4] = 1;
+		if (Show_Coin[4] == 1) Show_Coin[3] <= 1;
+		else Show_Coin[3] <= 0;
+		if (Show_Coin[0] == 1) Show_Coin[4] <= 1;
+		else Show_Coin[4] <= 0;
+		if (Show_Coin[1] == 1) Show_Coin[0] <= 1;
+		else Show_Coin[0] <= 0;
+		if (Show_Coin[2] == 1) Show_Coin[1] <= 1;
+		else Show_Coin[1] <= 0;
+		Show_Coin[2] <= 1;
 	end
-		
-	else if (get_Zero && !shift_Coin)
-		Show_Coin[0] = 0;
 		
 	end
 	

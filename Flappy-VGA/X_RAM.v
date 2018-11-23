@@ -291,10 +291,11 @@ integer i;
 							out_coin_4 <= out_coin_4 + 1;
 							if(out_coin_4 == 4)
 								out_coin_4 <= 0;
-
+						end
+						
+						if(array_X_Coin_Right[out_coin] == 230)
 							// Give shift signal to coin
 							shift_Coin <= 1;
-						end
 						else shift_Coin <= 0;
 				
 				end // COUNT_EN
