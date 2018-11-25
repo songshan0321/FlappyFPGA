@@ -97,9 +97,9 @@ module X_RAM_NOREAD(clk,reset,Start, Stop, Ack, out_pipe, out_coin,
  
  reg[2:0] state;
  
- parameter PIPE_WIDTH = 61;
+ parameter PIPE_WIDTH = 160;
  parameter COIN_WIDTH = 20;
- parameter INTERVAL = 142;
+ parameter INTERVAL = 160;
  
  localparam
 			QInitial = 3'b001,
@@ -123,18 +123,18 @@ module X_RAM_NOREAD(clk,reset,Start, Stop, Ack, out_pipe, out_coin,
 	parameter X4_init_2 = PIPE_WIDTH + 4*INTERVAL;
 	
 	//coin
-	parameter X0_init_coin = 0;
-	parameter X1_init_coin = INTERVAL;
-	parameter X2_init_coin = 2*INTERVAL;
-	parameter X3_init_coin = 3*INTERVAL;
-	parameter X4_init_coin = 4*INTERVAL;
+	parameter X0_init_coin = 0 + 70;
+	parameter X1_init_coin = INTERVAL + 70;
+	parameter X2_init_coin = 2*INTERVAL + 70;
+	parameter X3_init_coin = 3*INTERVAL + 70;
+	parameter X4_init_coin = 4*INTERVAL + 70;
 	
 	//coin
-	parameter X0_init_coin_2 = COIN_WIDTH;
-	parameter X1_init_coin_2 = COIN_WIDTH + INTERVAL;
-	parameter X2_init_coin_2 = COIN_WIDTH + 2*INTERVAL;
-	parameter X3_init_coin_2 = COIN_WIDTH + 3*INTERVAL;
-	parameter X4_init_coin_2 = COIN_WIDTH + 4*INTERVAL;
+	parameter X0_init_coin_2 = X0_init_coin + COIN_WIDTH;
+	parameter X1_init_coin_2 = X1_init_coin + COIN_WIDTH;
+	parameter X2_init_coin_2 = X2_init_coin + COIN_WIDTH;
+	parameter X3_init_coin_2 = X3_init_coin + COIN_WIDTH;
+	parameter X4_init_coin_2 = X4_init_coin + COIN_WIDTH;
 	
 	// pipe order
 	//reg [1:0] out_temp_0; 
