@@ -13,33 +13,23 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	Ld7, Ld6, Ld5, Ld4, Ld3, Ld2, Ld1, Ld0);
 	
 		/*  INPUTS */
-	input wire	clk_100MHz;
-	input	wire  Sw7, Sw6, Sw5, Sw4, Sw3, Sw2, Sw1, Sw0;
-	input wire BtnL, BtnR, BtnC, BtnU, BtnD;
+	input 	clk_100MHz;
+	input	Sw7, Sw6, Sw5, Sw4, Sw3, Sw2, Sw1, Sw0;
+	input 	BtnL, BtnR, BtnC, BtnU, BtnD;
 	
-	output wire	St_ce_bar, St_rp_bar, Mt_ce_bar, Mt_St_oe_bar, Mt_St_we_bar;
-	output wire	vga_h_sync, vga_v_sync;
+	output 	St_ce_bar, St_rp_bar, Mt_ce_bar, Mt_St_oe_bar, Mt_St_we_bar;
+	output 	vga_h_sync, vga_v_sync;
 	output wire [2:0] vga_r;
-	output wire  [2:0] vga_g;
+	output wire [2:0] vga_g;
 	output wire [1:0] vga_b;
-	output wire	An0, An1, An2, An3;
-	output wire	Ca, Cb, Cc, Cd, Ce, Cf, Cg, Dp;
-	output wire 	Ld0, Ld1, Ld2, Ld3, Ld4, Ld5, Ld6, Ld7;
+	output 	An0, An1, An2, An3;
+	output	Ca, Cb, Cc, Cd, Ce, Cf, Cg, Dp;
+	output 	Ld0, Ld1, Ld2, Ld3, Ld4, Ld5, Ld6, Ld7;
 
-
-
-	
-	wire [7:0] RGB, data_Cat,data_pipes,data_coins;
-	wire[8:0] addr_coins;
-	wire [9:0]addr_Cat;
-	wire [12:0] addr_pipes;
-	
-	
-	
 	
 	//////////////////////////////////////////////////////////////////////////////////////////
 	/*  LOCAL SIGNALS */
-	wire	Reset, board_clk, sys_clk;
+	wire	Reset, clk_100MHz, board_clk, sys_clk;
 	
 	// Inputs to the core design
 	wire Start, Ack;
@@ -103,17 +93,17 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	wire [9:0] Bird_X_R;
 	wire [9:0] Bird_Y_B;
 	wire BtnC_Pulse, BtnL_Pulse, BtnD_Pulse, BtnR_Pulse, BtnU_Pulse;
-	 
+	
 	wire [1:0] 	ssdscan_clk;
 	reg [1:0] state_num;
 	reg[1:0] state_num_2;
 	
-	//BUF BUF1 (board_clk, clk_100MHz); 	
+	BUF BUF1 (board_clk, clk_100MHz); 	
 	//BUF BUF2 (Reset, Sw0);
 	//BUF BUF3 (Start, Sw1);
 	
 	reg [27:0]	DIV_CLK;
-	always @ (posedge clk_100MHz, posedge Reset)  
+	always @ (posedge board_clk, posedge Reset)  
 	begin : CLOCK_DIVIDER
       if (Reset)
 			begin
@@ -138,7 +128,7 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	wire [9:0] CounterY;
 	assign sys_clk = board_clk;
 	
-	VGA_Adapter syncgen(.clk(clk_vga), .hsync(vga_h_sync), .vsync(vga_v_sync), .valid(valid), .x_ptr(CounterX), .y_ptr(CounterY));
+	VGA_Adapter syncgen(.clk(DIV_CLK[1]), .hsync(vga_h_sync), .vsync(vga_v_sync), .valid(inDisplayArea), .x_ptr(CounterX), .y_ptr(CounterY));
 	
 	/////////////////////////////////////////////////////////////////
 	///////////////		VGA control starts here		/////////////////
@@ -150,10 +140,22 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 //													GRAPHIC																			 //
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	Cat Cat(.clka(clk_vga), .addra(addr_Cat), .douta(data_Cat));
-	coin Coin(.clka(clk_vga), .addra(addr_coins), .douta(data_coins));
-	pipe Pipe (.clka(clk_vga), .addra(addr_pipes),.douta(data_pipes));
 
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//													BIRD																			 //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//													PIPE																			 //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//													COIN																			 //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -161,17 +163,13 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    Display_Selector selector(
-	.clk_100MHz(clk_100MHz),
-	.data_Cat(data_Cat),
-	.data_pipes(data_pipes),.data_coins(data_coins),
-	.addr_Cat(addr_Cat),
-	.addr_pipes(addr_pipes),.addr_coins(addr_coins),
 .clk_coin(DIV_CLK[19]), .q_Initial(q_Initial), .shift_Coin(shift_Coin),.get_Zero(get_Zero),
     .X_Edge_OO_L(X_Edge_OO_L),
 	.X_Edge_O1_L(X_Edge_O1_L),
 	.X_Edge_O2_L(X_Edge_O2_L),
 	.X_Edge_O3_L(X_Edge_O3_L),
 	.X_Edge_O4_L(X_Edge_O4_L),
+	
 	.X_Edge_OO_R(X_Edge_OO_R),
 	.X_Edge_O1_R(X_Edge_O1_R),
 	.X_Edge_O2_R(X_Edge_O2_R),
@@ -203,18 +201,13 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	.Y_Edge_03_Bottom(Y_Edge_03_Bottom),
 	.Y_Edge_04_Top(Y_Edge_04_Top),
 	.Y_Edge_04_Bottom(Y_Edge_04_Bottom),
-                        .clk_vga(clk_vga), .x_ptr(CounterX), .y_ptr(CounterY), .RGB(RGB)
+                        .DIV_CLK[1](DIV_CLK[1]), .x_ptr(CounterX), .y_ptr(CounterY), .RGB(RGB)
 	
     );
 
-//	wire R,G,B;
-	VGA_Render render(valid, RGB, vga_r,vga_g,vga_b);
-//always @(posedge sys_clk)
-//	begin
-//		vga_r[2:0] <= {3{R}};
-//		vga_g[2:0] <= {3{G}};
-//		vga_b[1:0] <= {2{B}};
-//	end
+	VGA_Render render(inDisplayArea, RGB, vga_r, vga_g, vga_b);
+
+	
 
 	//Flash when you lost
 	
@@ -297,18 +290,20 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	/////////////////////////////////////////////////////////////////
 	//////////////  	  SSD control ends here 	 ///////////////////
 	/////////////////////////////////////////////////////////////////
+	
 	/* BUTTON SIGNAL ASSIGNMENT */
 	assign Reset = BtnR;
 
-	X_RAM_NOREAD x_ram(.clk(clk_vga),.speed(clk_game),.reset(BtnR),.Start(BtnC), .Stop(q_Lose), .Ack(BtnD), .out_pipe(X_Index), .out_coin(X_Index_Coin),
+	X_RAM_NOREAD x_ram(.clk(DIV_CLK[19]),.reset(BtnR),.Start(BtnC), .Stop(q_Lose), .Ack(BtnD), .out_pipe(X_Index), .out_coin(X_Index_Coin),
 		.X_Edge_OO_L(X_Edge_OO_L), .X_Edge_O1_L(X_Edge_O1_L), .X_Edge_O2_L(X_Edge_O2_L), .X_Edge_O3_L(X_Edge_O3_L),.X_Edge_O4_L(X_Edge_O4_L), 
 		.X_Edge_OO_R(X_Edge_OO_R), .X_Edge_O1_R(X_Edge_O1_R), .X_Edge_O2_R(X_Edge_O2_R), .X_Edge_O3_R(X_Edge_O3_R), .X_Edge_O4_R(X_Edge_O4_R), 
 		.X_Coin_OO_L(X_Coin_OO_L), .X_Coin_O1_L(X_Coin_O1_L), .X_Coin_O2_L(X_Coin_O2_L), .X_Coin_O3_L(X_Coin_O3_L), .X_Coin_O4_L(X_Coin_O4_L),
 		.X_Coin_OO_R(X_Coin_OO_R), .X_Coin_O1_R(X_Coin_O1_R), .X_Coin_O2_R(X_Coin_O2_R), .X_Coin_O3_R(X_Coin_O3_R), .X_Coin_O4_R(X_Coin_O4_R),
 		.shift_Coin(shift_Coin),
 		.Q_Initial(q_InitialX), .Q_Count(q_Count), .Q_Stop(q_Stop));	
+	
 
-	Y_ROM y_rom(.clk(clk_vga), .I(X_Index), .IC(X_Index_Coin),
+	Y_ROM y_rom(.clk(DIV_CLK[19]), .I(X_Index), .IC(X_Index_Coin),
 		.YEdge0T(Y_Edge_00_Top), 
 		.YEdge0B(Y_Edge_00_Bottom),
 		.YEdge1T(Y_Edge_01_Top), 
@@ -327,7 +322,7 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 		);
 	
 
-	obstacle_logic obs_log(.Clk(clk_vga),.reset(BtnR),.Q_Initial(q_Initial),.Q_Check(q_Check),.Q_Lose(q_Lose),
+	obstacle_logic obs_log(.Clk(DIV_CLK[1]),.reset(BtnR),.Q_Initial(q_Initial),.Q_Check(q_Check),.Q_Lose(q_Lose),
 		.Start(BtnC), .Ack(BtnC), 
 		.X_Edge_Left(X_Edge_OO_L),
 		.X_Edge_Right(X_Edge_OO_R),
@@ -336,7 +331,7 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 		.Bird_X_L(Bird_X_L), .Bird_X_R(Bird_X_R), .Bird_Y_T(Bird_Y_T), .Bird_Y_B(Bird_Y_B));
 	
 		
-	coin_logic coin_log(.Clk(clk_vga),.reset(BtnR), .Score(Score),
+	coin_logic coin_log(.Clk(DIV_CLK[1]),.reset(BtnR), .Score(Score),
 		.Start(BtnC), .Ack(BtnC), 
 		.X_Coin_OO_L(X_Coin_OO_L),
 		.X_Coin_OO_R(X_Coin_OO_R),

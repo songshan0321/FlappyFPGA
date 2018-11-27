@@ -74,13 +74,12 @@ begin
 			begin
 				if(Start) // we're startin' folks
 					state <= QFlight;
-					
 				PositiveSpeed <= 10'd0;
 				NegativeSpeed <= 10'd0;
 				Bird_X_L <= 10'd230; //10'd300;
-				Bird_X_R <= 10'd249; //10'd300;
+				Bird_X_R <= Bird_X_L+39; //10'd300;
 				Bird_Y_T <= 10'd220;//10'd240;
-				Bird_Y_B <= 10'd239; //10'd300;
+				Bird_Y_B <= Bird_Y_T+24; //10'd300;
 			end	
 			
 			QFlight:
