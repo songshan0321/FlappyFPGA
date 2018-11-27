@@ -29,9 +29,9 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 
 
 	
-	wire [7:0] RGB, data_Cat,data_pipes,data_coins;
+	wire [7:0] RGB, data_Cat_1,data_Cat_2,data_Cat_3,data_Cat_4,data_pipes,data_coins;
 	wire[8:0] addr_coins;
-	wire [9:0]addr_Cat;
+	wire [10:0]addr_Cat_1,addr_Cat_2,addr_Cat_3,addr_Cat_4;
 	wire [12:0] addr_pipes;
 	
 	
@@ -111,17 +111,17 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	//BUF BUF1 (board_clk, clk_100MHz); 	
 	//BUF BUF2 (Reset, Sw0);
 	//BUF BUF3 (Start, Sw1);
-	
-	reg [27:0]	DIV_CLK;
-	always @ (posedge clk_100MHz, posedge Reset)  
-	begin : CLOCK_DIVIDER
-      if (Reset)
-			begin
-				DIV_CLK <= 0;
-			end
-      else
-			DIV_CLK <= DIV_CLK + 1'b1;
-	end	
+//	
+//	reg [27:0]	DIV_CLK;
+//	always @ (posedge clk_100MHz, posedge Reset)  
+//	begin : CLOCK_DIVIDER
+//      if (Reset)
+//			begin
+//				DIV_CLK <= 0;
+//			end
+//      else
+//			DIV_CLK <= DIV_CLK + 1'b1;
+//	end	
 
     Clock_div clock_div(
         .clk(clk_100MHz),
@@ -129,7 +129,7 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
         .clk_game(clk_game),
         .clk_move(clk_move),
         .clk_vga(clk_vga),
-        .clk_seg(scanning)
+        .clk_seg(clk_seg)
     );
 	assign 	{St_ce_bar, St_rp_bar, Mt_ce_bar, Mt_St_oe_bar, Mt_St_we_bar} = {5'b11111};
 	
@@ -150,9 +150,14 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 //													GRAPHIC																			 //
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	Cat Cat(.clka(clk_vga), .addra(addr_Cat), .douta(data_Cat));
+	Cat_1 Cat_1(.clka(clk_vga), .addra(addr_Cat_1), .douta(data_Cat_1));
+	Cat_2 Cat_2(.clka(clk_vga), .addra(addr_Cat_2), .douta(data_Cat_2));
+	Cat_3 Cat_3(.clka(clk_vga), .addra(addr_Cat_3), .douta(data_Cat_3));
+	Cat_4 Cat_4(.clka(clk_vga), .addra(addr_Cat_4), .douta(data_Cat_4));
+	
 	coin Coin(.clka(clk_vga), .addra(addr_coins), .douta(data_coins));
 	pipe Pipe (.clka(clk_vga), .addra(addr_pipes),.douta(data_pipes));
+	
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -162,11 +167,12 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    Display_Selector selector(
 	.clk_100MHz(clk_100MHz),
-	.data_Cat(data_Cat),
+	.data_Cat_1(data_Cat_1),.data_Cat_2(data_Cat_2),.data_Cat_3(data_Cat_3),.data_Cat_4(data_Cat_4),
+	.addr_Cat_1(addr_Cat_1),.addr_Cat_2(addr_Cat_2),.addr_Cat_3(addr_Cat_3),.addr_Cat_4(addr_Cat_4),
 	.data_pipes(data_pipes),.data_coins(data_coins),
-	.addr_Cat(addr_Cat),
+	
 	.addr_pipes(addr_pipes),.addr_coins(addr_coins),
-.clk_coin(DIV_CLK[19]), .q_Initial(q_Initial), .shift_Coin(shift_Coin),.get_Zero(get_Zero),
+.clk_coin(clk_game), .q_Initial(q_Initial), .shift_Coin(shift_Coin),.get_Zero(get_Zero),
     .X_Edge_OO_L(X_Edge_OO_L),
 	.X_Edge_O1_L(X_Edge_O1_L),
 	.X_Edge_O2_L(X_Edge_O2_L),
@@ -203,30 +209,12 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	.Y_Edge_03_Bottom(Y_Edge_03_Bottom),
 	.Y_Edge_04_Top(Y_Edge_04_Top),
 	.Y_Edge_04_Bottom(Y_Edge_04_Bottom),
-                        .clk_vga(clk_vga), .x_ptr(CounterX), .y_ptr(CounterY), .RGB(RGB)
+   .clk_vga(clk_vga), .x_ptr(CounterX), .y_ptr(CounterY), .RGB(RGB),.clk_cat(clk_move)
 	
     );
 
 //	wire R,G,B;
 	VGA_Render render(valid, RGB, vga_r,vga_g,vga_b);
-//always @(posedge sys_clk)
-//	begin
-//		vga_r[2:0] <= {3{R}};
-//		vga_g[2:0] <= {3{G}};
-//		vga_b[1:0] <= {2{B}};
-//	end
-
-	//Flash when you lost
-	
-//	reg Flash_Blue;
-//	
-//	always @(posedge DIV_CLK[22])
-//		begin
-//			Flash_Blue <= 0;
-//			if (q_Lose)
-//				Flash_Blue <= ~Flash_Blue;				
-//		end
-	
 
 	/////////////////////////////////////////////////////////////////
 	//////////////  	  LD control starts here 	 ////////////////
@@ -254,7 +242,7 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	
 	// need a scan clk for the seven segment display 
 	// 191Hz (50MHz / 2^18) works well
-	assign ssdscan_clk = DIV_CLK[19:18];	
+	assign ssdscan_clk = clk_seg;	
 	assign An0	= !(~(ssdscan_clk[1]) && ~(ssdscan_clk[0]));  // when ssdscan_clk = 00
 	assign An1	= !(~(ssdscan_clk[1]) &&  (ssdscan_clk[0]));  // when ssdscan_clk = 01
 	assign An1	= !(~(ssdscan_clk[1]) &&  (ssdscan_clk[0]));  // when ssdscan_clk = 01
@@ -300,7 +288,7 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	/* BUTTON SIGNAL ASSIGNMENT */
 	assign Reset = BtnR;
 
-	X_RAM_NOREAD x_ram(.clk(DIV_CLK[19]),.reset(BtnR),.Start(BtnC), .Stop(q_Lose), .Ack(BtnD), .out_pipe(X_Index), .out_coin(X_Index_Coin),
+	X_RAM_NOREAD x_ram(.clk(clk_game),.reset(BtnR),.Start(BtnC), .Stop(q_Lose), .Ack(BtnD), .out_pipe(X_Index), .out_coin(X_Index_Coin),
 		.X_Edge_OO_L(X_Edge_OO_L), .X_Edge_O1_L(X_Edge_O1_L), .X_Edge_O2_L(X_Edge_O2_L), .X_Edge_O3_L(X_Edge_O3_L),.X_Edge_O4_L(X_Edge_O4_L), 
 		.X_Edge_OO_R(X_Edge_OO_R), .X_Edge_O1_R(X_Edge_O1_R), .X_Edge_O2_R(X_Edge_O2_R), .X_Edge_O3_R(X_Edge_O3_R), .X_Edge_O4_R(X_Edge_O4_R), 
 		.X_Coin_OO_L(X_Coin_OO_L), .X_Coin_O1_L(X_Coin_O1_L), .X_Coin_O2_L(X_Coin_O2_L), .X_Coin_O3_L(X_Coin_O3_L), .X_Coin_O4_L(X_Coin_O4_L),
@@ -308,7 +296,7 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 		.shift_Coin(shift_Coin),
 		.Q_Initial(q_InitialX), .Q_Count(q_Count), .Q_Stop(q_Stop));	
 
-	Y_ROM y_rom(.clk(DIV_CLK[19]), .I(X_Index), .IC(X_Index_Coin),
+	Y_ROM y_rom(.clk(clk_game), .I(X_Index), .IC(X_Index_Coin),
 		.YEdge0T(Y_Edge_00_Top), 
 		.YEdge0B(Y_Edge_00_Bottom),
 		.YEdge1T(Y_Edge_01_Top), 
@@ -345,7 +333,7 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 		.Bird_X_L(Bird_X_L), .Bird_X_R(Bird_X_R), .Bird_Y_T(Bird_Y_T), .Bird_Y_B(Bird_Y_B));
 			
 
-	flight_control flight_control(.Clk(DIV_CLK[20]), .reset(BtnR), .Start(BtnC), .Ack(BtnC), .Stop(q_Lose),
+	flight_control flight_control(.Clk(clk_game), .reset(BtnR), .Start(BtnC), .Ack(BtnC), .Stop(q_Lose),
 		.BtnU(BtnU), .BtnD(BtnD), .Bird_X_L(Bird_X_L),  .Bird_X_R(Bird_X_R), .Bird_Y_T(Bird_Y_T),  .Bird_Y_B(Bird_Y_B),
 		.q_Initial(q_InitialF), .q_Flight(q_Flight), .q_Stop(q_StopF));
 endmodule

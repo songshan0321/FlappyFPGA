@@ -98,7 +98,7 @@ module X_RAM_NOREAD(clk,reset,Start, Stop, Ack, out_pipe, out_coin,
  reg[2:0] state;
  
  parameter PIPE_WIDTH = 160;
- parameter COIN_WIDTH = 19;
+ parameter COIN_WIDTH = 20;
  parameter INTERVAL = 160;
  
  localparam
