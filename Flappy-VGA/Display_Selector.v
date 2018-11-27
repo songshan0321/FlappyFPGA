@@ -138,10 +138,14 @@
 	if (shift_Coin)
 	begin
 		if (Show_Coin[4] == 1) Show_Coin[3] <= 1;
-		else if (Show_Coin[0] == 1) Show_Coin[4] <= 1;
-		else if (Show_Coin[1] == 1) Show_Coin[0] <= 1;
-		else if (Show_Coin[2] == 1) Show_Coin[1] <= 1;
-		else   Show_Coin[2] <= 1;
+		else Show_Coin[3] <= 0;
+		if (Show_Coin[0] == 1) Show_Coin[4] <= 1;
+		else Show_Coin[4] <= 0;
+		if (Show_Coin[1] == 1) Show_Coin[0] <= 1;
+		else Show_Coin[0] <= 0;
+		if (Show_Coin[2] == 1) Show_Coin[1] <= 1;
+		else Show_Coin[1] <= 0;
+		Show_Coin[2] <= 1;
 	end	
 	end
 
