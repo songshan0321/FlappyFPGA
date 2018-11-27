@@ -23,7 +23,7 @@
 // I guess the clock would be at whatever rate ... not sure actually;
 // Coordinate is the left edge of the pipe. Right edge is calculated in obstacle logic.
 //////////////////////////////////////////////////////////////////////////////////
-module X_RAM_NOREAD(clk,reset,Start, Stop, Ack, out_pipe, out_coin, speed,
+module X_RAM_NOREAD(clk,reset,Start, Stop, Ack, out_pipe, out_coin,
 	X_Edge_OO_L,
 	X_Edge_O1_L,
 	X_Edge_O2_L,
@@ -55,7 +55,7 @@ module X_RAM_NOREAD(clk,reset,Start, Stop, Ack, out_pipe, out_coin, speed,
 
  input clk,reset;
  input Start, Stop, Ack;
- input speed;
+ 
  output [9:0] X_Edge_OO_L;
  output [9:0] X_Edge_O1_L;
  output [9:0] X_Edge_O2_L;
@@ -97,9 +97,9 @@ module X_RAM_NOREAD(clk,reset,Start, Stop, Ack, out_pipe, out_coin, speed,
  
  reg[2:0] state;
  
- parameter PIPE_WIDTH = 61;
+ parameter PIPE_WIDTH = 160;
  parameter COIN_WIDTH = 19;
- parameter INTERVAL = 142;
+ parameter INTERVAL = 160;
  
  localparam
 			QInitial = 3'b001,
@@ -123,18 +123,18 @@ module X_RAM_NOREAD(clk,reset,Start, Stop, Ack, out_pipe, out_coin, speed,
 	parameter X4_init_2 = PIPE_WIDTH + 4*INTERVAL;
 	
 	//coin
-	parameter X0_init_coin = 0;
-	parameter X1_init_coin = INTERVAL;
-	parameter X2_init_coin = 2*INTERVAL;
-	parameter X3_init_coin = 3*INTERVAL;
-	parameter X4_init_coin = 4*INTERVAL;
+	parameter X0_init_coin = 0 + 70;
+	parameter X1_init_coin = INTERVAL + 70;
+	parameter X2_init_coin = 2*INTERVAL + 70;
+	parameter X3_init_coin = 3*INTERVAL + 70;
+	parameter X4_init_coin = 4*INTERVAL + 70;
 	
 	//coin
-	parameter X0_init_coin_2 = COIN_WIDTH;
-	parameter X1_init_coin_2 = COIN_WIDTH + INTERVAL;
-	parameter X2_init_coin_2 = COIN_WIDTH + 2*INTERVAL;
-	parameter X3_init_coin_2 = COIN_WIDTH + 3*INTERVAL;
-	parameter X4_init_coin_2 = COIN_WIDTH + 4*INTERVAL;
+	parameter X0_init_coin_2 = X0_init_coin + COIN_WIDTH;
+	parameter X1_init_coin_2 = X1_init_coin + COIN_WIDTH;
+	parameter X2_init_coin_2 = X2_init_coin + COIN_WIDTH;
+	parameter X3_init_coin_2 = X3_init_coin + COIN_WIDTH;
+	parameter X4_init_coin_2 = X4_init_coin + COIN_WIDTH;
 	
 	// pipe order
 	//reg [1:0] out_temp_0; 
@@ -150,81 +150,70 @@ module X_RAM_NOREAD(clk,reset,Start, Stop, Ack, out_pipe, out_coin, speed,
 	reg [2:0] out_coin_3;
 	reg [2:0] out_coin_4;
 
-	always @ (posedge clk, posedge reset)
-		begin 
-			if(reset)
-				state <= QInitial;
-			else
-			begin
-				case(state)	 
-					QInitial:
-					begin
-					
-							array_X_Left[0] <= X0_init;
-							array_X_Left[1] <= X1_init;
-							array_X_Left[2] <= X2_init;
-							array_X_Left[3] <= X3_init;
-							array_X_Left[4] <= X4_init;
-							
-							array_X_Right[0] <= X0_init_2;
-							array_X_Right[1] <= X1_init_2;
-							array_X_Right[2] <= X2_init_2;
-							array_X_Right[3] <= X3_init_2;
-							array_X_Right[4] <= X4_init_2;
-							
-							// Coins
-							array_X_Coin_Left[0] <= X0_init_coin;
-							array_X_Coin_Left[1] <= X1_init_coin;
-							array_X_Coin_Left[2] <= X2_init_coin;
-							array_X_Coin_Left[3] <= X3_init_coin;
-							array_X_Coin_Left[4] <= X4_init_coin;
-							
-							array_X_Coin_Right[0] <= X0_init_coin_2;
-							array_X_Coin_Right[1] <= X1_init_coin_2;
-							array_X_Coin_Right[2] <= X2_init_coin_2;
-							array_X_Coin_Right[3] <= X3_init_coin_2;
-							array_X_Coin_Right[4] <= X4_init_coin_2;
-							
-							out_pipe <= 2; // The first pipe in scope is 2 because that's just to the right of the bird.
-							out_temp_1 <= 3;
-							out_temp_2 <= 4;
-							out_temp_3 <= 0;
-							out_temp_4 <= 1;
-							
-							out_coin <= 2; // The first coin in scope is 2 because that's just to the right of the bird.
-							out_coin_1 <= 3;
-							out_coin_2 <= 4;
-							out_coin_3 <= 0;
-							out_coin_4 <= 1;
-							
-						if(Start) // we're startin' folks
-							state <= QCount;
-					end
-				
-					QStop:
-					begin
-						if(Ack)
-							state <= QInitial;
-					end
-
-					default:
-						state <= UNK;
-				endcase
-			end
-		end
-integer i;		
-	always @ (posedge speed)
-	begin
-		if (state == QCount)
+integer i;
+ always @ (posedge clk, posedge reset)
+	begin  : X_RAM_logic
+		if(reset)
 		begin
-			if(Stop)
-			begin
-				state <= QStop;
-			end
-			else
-			begin			
-				for(i = 0; i < 5; i = i + 1) // Then we shift each pipe by 1 pixel
+			state <= QInitial;
+		end
+		
+		else
+		begin
+			case(state)	 
+	 		
+				QInitial:
 				begin
+				
+						array_X_Left[0] <= X0_init;
+						array_X_Left[1] <= X1_init;
+						array_X_Left[2] <= X2_init;
+						array_X_Left[3] <= X3_init;
+						array_X_Left[4] <= X4_init;
+						
+						array_X_Right[0] <= X0_init_2;
+						array_X_Right[1] <= X1_init_2;
+						array_X_Right[2] <= X2_init_2;
+						array_X_Right[3] <= X3_init_2;
+						array_X_Right[4] <= X4_init_2;
+						
+						// Coins
+						array_X_Coin_Left[0] <= X0_init_coin;
+						array_X_Coin_Left[1] <= X1_init_coin;
+						array_X_Coin_Left[2] <= X2_init_coin;
+						array_X_Coin_Left[3] <= X3_init_coin;
+						array_X_Coin_Left[4] <= X4_init_coin;
+						
+						array_X_Coin_Right[0] <= X0_init_coin_2;
+						array_X_Coin_Right[1] <= X1_init_coin_2;
+						array_X_Coin_Right[2] <= X2_init_coin_2;
+						array_X_Coin_Right[3] <= X3_init_coin_2;
+						array_X_Coin_Right[4] <= X4_init_coin_2;
+						
+						out_pipe <= 2; // The first pipe in scope is 2 because that's just to the right of the bird.
+						out_temp_1 <= 3;
+						out_temp_2 <= 4;
+						out_temp_3 <= 0;
+						out_temp_4 <= 1;
+						
+						out_coin <= 2; // The first coin in scope is 2 because that's just to the right of the bird.
+						out_coin_1 <= 3;
+						out_coin_2 <= 4;
+						out_coin_3 <= 0;
+						out_coin_4 <= 1;
+						
+					if(Start) // we're startin' folks
+						state <= QCount;
+				end	
+			
+				QCount:
+				begin
+					if(Stop)
+					begin
+						state <= QStop;
+					end
+						for(i = 0; i < 5; i = i + 1) // Then we shift each pipe by 1 pixel
+						begin
 							array_X_Left[i] <= array_X_Left[i]-10'd1;
 							array_X_Right[i] <= array_X_Right[i]-10'd1;
 							array_X_Coin_Left[i] <= array_X_Coin_Left[i]-10'd1;
@@ -249,9 +238,10 @@ integer i;
 								array_X_Coin_Left[i] <= 10'd640 + PIPE_WIDTH - COIN_WIDTH;
 								array_X_Coin_Right[i] <= 10'd640 + PIPE_WIDTH;
 							end
-
-
-							if(array_X_Right[out_pipe] < 230) // if current pipe is going out of scope 
+							
+						end
+				
+						if(array_X_Right[out_pipe] < 230) // if current pipe is going out of scope 
 						begin // move on to the next pipe
 							out_pipe <= out_pipe + 1;
 							if(out_pipe == 4)
@@ -302,12 +292,22 @@ integer i;
 						if(array_X_Coin_Right[out_coin] == 230)
 							// Give shift signal to coin
 							shift_Coin <= 1;
-						else 
-							shift_Coin <= 0;
+						else shift_Coin <= 0;
+				
+				end // COUNT_EN
+			
+				QStop:
+				begin
+					if(Ack)
+						state <= QInitial;
 				end
-			end
+
+				default:
+					state <= UNK;
+			endcase
 		end
 	end
+
  
  assign X_Edge_OO_L = array_X_Left[out_pipe];
  assign X_Edge_O1_L = array_X_Left[out_temp_1];

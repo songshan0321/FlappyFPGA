@@ -300,7 +300,7 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	/* BUTTON SIGNAL ASSIGNMENT */
 	assign Reset = BtnR;
 
-	X_RAM_NOREAD x_ram(.clk(clk_vga),.speed(clk_game),.reset(BtnR),.Start(BtnC), .Stop(q_Lose), .Ack(BtnD), .out_pipe(X_Index), .out_coin(X_Index_Coin),
+	X_RAM_NOREAD x_ram(.clk(DIV_CLK[19]),.reset(BtnR),.Start(BtnC), .Stop(q_Lose), .Ack(BtnD), .out_pipe(X_Index), .out_coin(X_Index_Coin),
 		.X_Edge_OO_L(X_Edge_OO_L), .X_Edge_O1_L(X_Edge_O1_L), .X_Edge_O2_L(X_Edge_O2_L), .X_Edge_O3_L(X_Edge_O3_L),.X_Edge_O4_L(X_Edge_O4_L), 
 		.X_Edge_OO_R(X_Edge_OO_R), .X_Edge_O1_R(X_Edge_O1_R), .X_Edge_O2_R(X_Edge_O2_R), .X_Edge_O3_R(X_Edge_O3_R), .X_Edge_O4_R(X_Edge_O4_R), 
 		.X_Coin_OO_L(X_Coin_OO_L), .X_Coin_O1_L(X_Coin_O1_L), .X_Coin_O2_L(X_Coin_O2_L), .X_Coin_O3_L(X_Coin_O3_L), .X_Coin_O4_L(X_Coin_O4_L),
@@ -308,7 +308,7 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 		.shift_Coin(shift_Coin),
 		.Q_Initial(q_InitialX), .Q_Count(q_Count), .Q_Stop(q_Stop));	
 
-	Y_ROM y_rom(.clk(clk_vga), .I(X_Index), .IC(X_Index_Coin),
+	Y_ROM y_rom(.clk(DIV_CLK[19]), .I(X_Index), .IC(X_Index_Coin),
 		.YEdge0T(Y_Edge_00_Top), 
 		.YEdge0B(Y_Edge_00_Bottom),
 		.YEdge1T(Y_Edge_01_Top), 

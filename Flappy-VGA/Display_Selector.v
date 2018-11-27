@@ -181,7 +181,7 @@
                 if (Cat_On) begin
                     RGB <= (data_Cat!=TRANSPARENT) ? data_Cat : 8'b0;
 					if (Cat_Out)
-						Addr_Buff_Cat<=10'd0;
+						Addr_Buff_Cat<=10'd4;
 					else
 						Addr_Buff_Cat<=Addr_Buff_Cat+1;
 					addr_Cat <= Addr_Buff_Cat;
@@ -189,7 +189,7 @@
                 else if (Pipe_On) begin
                     RGB <= (data_pipes!=TRANSPARENT) ? data_pipes : 8'b0;
 					if (Pipe_Out)
-						Addr_Buff_pipes<=10'd0;
+						Addr_Buff_pipes<=10'd4;
 					else
 						Addr_Buff_pipes<=Addr_Buff_pipes+1;
 					addr_pipes <= Addr_Buff_pipes;
