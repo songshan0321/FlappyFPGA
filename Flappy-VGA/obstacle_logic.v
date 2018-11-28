@@ -100,7 +100,7 @@ begin
 				//if( (Bird_Y_T >= Y_Edge_Bottom || Bird_Y_B <= Y_Edge_Top)
 				//	&& (Bird_X_L > X_Edge_Left && Bird_X_R < X_Edge_Right) )
 				if( (Bird_Y_B >= Y_Edge_Bottom || Bird_Y_T <= Y_Edge_Top)
-					&& (Bird_X_R > X_Edge_Left && Bird_X_L < X_Edge_Right) )
+					&& (Bird_X_R > X_Edge_Left || Bird_X_L < X_Edge_Right) )
 					begin
 						state <= QLose;
 					end
