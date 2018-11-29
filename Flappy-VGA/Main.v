@@ -129,7 +129,8 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
         .clk_game(clk_game),
         .clk_move(clk_move),
         .clk_vga(clk_vga),
-        .clk_seg(clk_seg)
+        .clk_seg(clk_seg),
+		  .score(Score)
     );
 	assign 	{St_ce_bar, St_rp_bar, Mt_ce_bar, Mt_St_oe_bar, Mt_St_we_bar} = {5'b11111};
 	
@@ -288,7 +289,7 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	/* BUTTON SIGNAL ASSIGNMENT */
 	assign Reset = BtnR;
 
-	X_RAM_NOREAD x_ram(.clk(clk_game),.reset(BtnR),.Start(BtnC), .Stop(q_Lose), .Ack(BtnD), .out_pipe(X_Index), .out_coin(X_Index_Coin),
+	X_RAM_NOREAD x_ram(.clk(clk_game),.reset(BtnR), .Start(BtnC), .Stop(q_Lose), .Ack(BtnD), .out_pipe(X_Index), .out_coin(X_Index_Coin),
 		.X_Edge_OO_L(X_Edge_OO_L), .X_Edge_O1_L(X_Edge_O1_L), .X_Edge_O2_L(X_Edge_O2_L), .X_Edge_O3_L(X_Edge_O3_L),.X_Edge_O4_L(X_Edge_O4_L), 
 		.X_Edge_OO_R(X_Edge_OO_R), .X_Edge_O1_R(X_Edge_O1_R), .X_Edge_O2_R(X_Edge_O2_R), .X_Edge_O3_R(X_Edge_O3_R), .X_Edge_O4_R(X_Edge_O4_R), 
 		.X_Coin_OO_L(X_Coin_OO_L), .X_Coin_O1_L(X_Coin_O1_L), .X_Coin_O2_L(X_Coin_O2_L), .X_Coin_O3_L(X_Coin_O3_L), .X_Coin_O4_L(X_Coin_O4_L),
@@ -296,7 +297,7 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 		.shift_Coin(shift_Coin),
 		.Q_Initial(q_InitialX), .Q_Count(q_Count), .Q_Stop(q_Stop));	
 
-	Y_ROM y_rom(.clk(clk_game), .I(X_Index), .IC(X_Index_Coin),
+	Y_ROM y_rom(.clk(clk_game), .reset(BtnR), .Start(BtnC), .I(X_Index), .IC(X_Index_Coin),
 		.YEdge0T(Y_Edge_00_Top), 
 		.YEdge0B(Y_Edge_00_Bottom),
 		.YEdge1T(Y_Edge_01_Top), 
@@ -311,12 +312,13 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 		.YCoin1(Y_Coin_01),
 		.YCoin2(Y_Coin_02),
 		.YCoin3(Y_Coin_03),
-		.YCoin4(Y_Coin_04)
+		.YCoin4(Y_Coin_04),
+		.Q_Initial(q_InitialX), .Q_Count(q_Count), .Q_Stop(q_Stop)
 		);
 	
 
 	obstacle_logic obs_log(.Clk(clk_vga),.reset(BtnR),.Q_Initial(q_Initial),.Q_Check(q_Check),.Q_Lose(q_Lose),
-		.Start(BtnC), .Ack(BtnC), 
+		.Start(BtnC), .Ack(BtnR), 
 		.X_Edge_Left(X_Edge_OO_L),
 		.X_Edge_Right(X_Edge_OO_R),
 		.Y_Edge_Top(Y_Edge_00_Top),
@@ -325,7 +327,7 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 	
 		
 	coin_logic coin_log(.Clk(clk_vga),.reset(BtnR), .Score(Score),
-		.Start(BtnC), .Ack(BtnC), 
+		.Start(BtnC), .Ack(BtnR), 
 		.X_Coin_OO_L(X_Coin_OO_L),
 		.X_Coin_OO_R(X_Coin_OO_R),
 		.Y_Coin_00(Y_Coin_00),
@@ -333,7 +335,7 @@ module Main(clk_100MHz, vga_h_sync, vga_v_sync, vga_r, vga_g, vga_b,
 		.Bird_X_L(Bird_X_L), .Bird_X_R(Bird_X_R), .Bird_Y_T(Bird_Y_T), .Bird_Y_B(Bird_Y_B));
 			
 
-	flight_control flight_control(.Clk(clk_game), .reset(BtnR), .Start(BtnC), .Ack(BtnC), .Stop(q_Lose),
+	flight_control flight_control(.Clk(clk_game), .reset(BtnR), .Start(BtnC), .Ack(BtnR), .Stop(q_Lose),
 		.BtnU(BtnU), .BtnD(BtnD), .Bird_X_L(Bird_X_L),  .Bird_X_R(Bird_X_R), .Bird_Y_T(Bird_Y_T),  .Bird_Y_B(Bird_Y_B),
 		.q_Initial(q_InitialF), .q_Flight(q_Flight), .q_Stop(q_StopF));
 endmodule

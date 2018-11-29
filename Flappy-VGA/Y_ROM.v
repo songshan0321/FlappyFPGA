@@ -20,13 +20,16 @@
 // This holds default heights (Y coordinates) for pipe obstacles.
 // Coordinate is the top edge of the pipe. Bottom edge is calculated in obstacle logic.
 //////////////////////////////////////////////////////////////////////////////////
-module Y_ROM(clk, I, IC,
+module Y_ROM(clk, I, IC, reset, Start,
 	YEdge0T, YEdge0B,
 	YEdge1T, YEdge1B,
 	YEdge2T, YEdge2B,
 	YEdge3T, YEdge3B,
 	YEdge4T, YEdge4B,
-	YCoin0, YCoin1, YCoin2, YCoin3, YCoin4
+	YCoin0, YCoin1, YCoin2, YCoin3, YCoin4,
+	Q_Initial,
+	Q_Count,
+	Q_Stop
 	);
 	
 	parameter ET0 = 50;
@@ -48,9 +51,12 @@ module Y_ROM(clk, I, IC,
 	reg [9:0] C3 = 0;
 	reg [9:0] C4 = 0;
 	
+	input Q_Initial, Q_Count, Q_Stop;	
 	input [2:0] I;
 	input [2:0] IC;
 	input clk;
+	input reset;
+	input Start;
 	
 	output [9:0] YEdge0T;
 	output [9:0] YEdge0B;
@@ -175,7 +181,16 @@ module Y_ROM(clk, I, IC,
 				end
          endcase	 
 			// (val - A)*(b-a)/(B-A) + a , if [A,B] -> [a,b]
-	always @(IC) // Index of selected coin
+	always @(IC, reset) // Index of selected coin
+			if(Q_Stop && reset)
+			begin
+				C0 = 0;
+				C1 = 0;
+				C2 = 0;
+				C3 = 0;
+				C4 = 0;
+			end
+			else
          case (IC)
             3'b000: 
 				begin 
